@@ -2,9 +2,23 @@ name: html5-build
 run-name: Performing web build
 on: [push]
 jobs:
-  install-dependencies:
+  perform-export:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: wget https://github.com/godotengine/godot/releases/download/3.5.2-stable/Godot_v3.5.2-stable_linux_headless.64.zip -o godot-headless
-      - run: stat godot-headless
+
+      - name: Download Godot headless
+        run: |
+          curl -L https://github.com/godotengine/godot/releases/download/3.5.3-stable/Godot_v3.5.3-stable_linux_headless.64.zip -o Godot_v3.5.3-stable_linux_headless.64.zip
+          unzip Godot_v3.5.3-stable_linux_headless.64.zip
+
+      - name: Download Godot export templates
+        run: |
+          curl -L https://github.com/godotengine/godot/releases/download/3.5.3-stable/Godot_v3.5.3-stable_export_templates.tpz -o Godot_v3.5.3-stable_export_templates.tpz
+          mkdir -p ~/.local/share/godot/templates/3.5.3.stable/
+          unzip -j Godot_v3.5.3-stable_export_templates.tpz "templates/*" -d ~/.local/share/godot/templates/3.5.3.stable/
+
+      - name: Perform HTML5 export
+        run: |
+          mkdir -p build/HTML5
+          ./Godot_v3.5.3-stable_linux_headless.64 --export HTML5 build/HTML5/pong.html
