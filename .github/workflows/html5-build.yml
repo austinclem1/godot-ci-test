@@ -1,0 +1,10 @@
+name: html5-build
+run-name: Performing web build
+on: [push]
+jobs:
+  install-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: wget https://github.com/godotengine/godot/releases/download/3.5.2-stable/Godot_v3.5.2-stable_linux_headless.64.zip -o godot-headless
+      - run: stat godot-headless
