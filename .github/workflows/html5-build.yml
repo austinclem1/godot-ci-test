@@ -1,6 +1,9 @@
 name: html5-build
 run-name: Performing web build
-on: [push]
+on:
+  push:
+    branches:
+      - main
 jobs:
   perform-export:
     runs-on: ubuntu-latest
