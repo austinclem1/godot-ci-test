@@ -1,12 +1,13 @@
 name: html5-build
 run-name: Performing web build
 on:
+  workflow_dispatch:
   pull_request:
     types:
       - closed
 jobs:
   perform-export:
-    if: github.event.pull_request.merged == true
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,3 +27,36 @@ jobs:
         run: |
           mkdir -p build/HTML5
           ./Godot_v3.5.3-stable_linux_headless.64 --export HTML5 build/HTML5/pong.html
+          mv build/HTML5/pong.html build/HTML5/index.html
+
+      - name: Save build so we can use it to upload deployment in the next job
+        uses: actions/upload-artifact@v3
+        with:
+          name: html5-build-artifact
+          path: build/HTML5/
+
+  update-deployment:
+    needs: perform-export
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout deployment repository
+        uses: actions/checkout@v4
+        with:
+          repository: austinclem1/austinclem1.github.io
+
+      - name: Remove existing deployment files
+        run: rm -rf demos/godot-web
+      
+      - name: Download new build
+        uses: actions/download-artifact@v3
+        with:
+          name: html5-build-artifact
+          path: demos/godot-web
+
+      - name: Commit and push updated build
+        run: |
+          git add demos/godot-web
+          git commit -m "build bot"
+          git push origin main
+
+      - run: ls demos/godot-web
